@@ -1,4 +1,4 @@
-gallery
+Gallery
 =======
 
-Static gallery HTML generator
+Static HTML gallery generator

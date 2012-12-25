@@ -1,6 +1,6 @@
 #!/bin/sh
 # File: gallery.sh
-#  Time-stamp: <2012-12-25 23:42:40 gawen>
+#  Time-stamp: <2012-12-26 00:04:51 gawen>
 #
 #  Copyright (C) 2012 David Hauweele <david@hauweele.net>
 #
@@ -17,7 +17,7 @@
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-set -- $(getopt "hVvOEe:t:n:q:C:T:c:" $*)
+set -- $(getopt "hVvOEe:t:n:q:C:T:c:R:" $*)
 
 IMG_EXT="jpg jpeg png"
 
@@ -38,13 +38,14 @@ help() (
     echo " -q Reduce quality."
     echo " -c Stylesheet to use."
     echo " -C Extra convert arguments."
+    echo " -R Resize the original images."
     echo " -E Add Exiv comments."
 )
 
 output=public_html
 extension=jpg
-tiny_size=120x60
-normal_size=800x600
+tiny_size=x120
+normal_size=x480
 stylesheet=/usr/local/share/gallery/style.css
 main_title="Gallery"
 quality=80
@@ -67,7 +68,8 @@ do
         -o) output=$2; shift;;
         -e) extension=$2; shift;;
         -q) quality=$2; shift;;
-        -c) stylesheet=$2; shift; echo ;;
+        -c) stylesheet=$2; shift;;
+        -R) resize=$2; shift;;
         *)
             help
             exit 0
@@ -168,7 +170,13 @@ do
         $par convert $quality -resize "$tiny_size" "$file" "$output_tiny/${out}_t.$extension" &
         if [ -n "$original" ]
         then
-            cp "$file" "$output_orig/${out}_o.$extension"
+            if [ -n "$resize" ]
+            then
+                $par convert $quality -resize "$resize" "$file" "$output_orig/${out}_o.$extension" &
+            else
+                # FIXME: Use original extension.
+                cp "$file" "$output_orig/${out}_o.$extension"
+            fi
         fi
 
         title=$(basename "$file")

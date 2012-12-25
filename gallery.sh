@@ -1,6 +1,6 @@
 #!/bin/sh
 # File: gallery.sh
-#  Time-stamp: <2012-12-24 21:27:06 gawen>
+#  Time-stamp: <2012-12-25 23:42:40 gawen>
 #
 #  Copyright (C) 2012 David Hauweele <david@hauweele.net>
 #
@@ -17,7 +17,7 @@
 #  You should have received a copy of the GNU General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-set -- $(getopt "hVvOEe:t:n:q:C:T:" $*)
+set -- $(getopt "hVvOEe:t:n:q:C:T:c:" $*)
 
 IMG_EXT="jpg jpeg png"
 
@@ -36,6 +36,7 @@ help() (
     echo " -t Tiny size (default: '120x')."
     echo " -n Normal size (defualt: '800x')."
     echo " -q Reduce quality."
+    echo " -c Stylesheet to use."
     echo " -C Extra convert arguments."
     echo " -E Add Exiv comments."
 )
@@ -44,6 +45,7 @@ output=public_html
 extension=jpg
 tiny_size=120x60
 normal_size=800x600
+stylesheet=/usr/local/share/gallery/style.css
 main_title="Gallery"
 quality=80
 
@@ -65,6 +67,7 @@ do
         -o) output=$2; shift;;
         -e) extension=$2; shift;;
         -q) quality=$2; shift;;
+        -c) stylesheet=$2; shift; echo ;;
         *)
             help
             exit 0
@@ -74,6 +77,7 @@ do
 done
 shift
 
+[ -r "$stylesheet" ] || { echo "Cannot read CSS stylesheet ($stylesheet)."; exit 1; }
 convert -version >/dev/null 2>&1 || { echo "ImageMagick Convert Command-Line Tool required." >&2; exit 1; }
 if [ -n "$exiv" ]
 then
@@ -111,6 +115,7 @@ find_filter="$find_filter -false"
 if [ -x "$(which par)" ]
 then
     par="$(which par)"
+    par_amp="&"
 fi
 
 if [ -x "$(which base)" -a -x "$(which crc32)" ]
@@ -159,8 +164,8 @@ do
     for file in $files
     do
         out=$(output_name "$file")
-        $par convert $quality -resize "$normal_size" "$file" "$output_normal/${out}_n.$extension"
-        $par convert $quality -resize "$tiny_size" "$file" "$output_tiny/${out}_t.$extension"
+        $par convert $quality -resize "$normal_size" "$file" "$output_normal/${out}_n.$extension" &
+        $par convert $quality -resize "$tiny_size" "$file" "$output_tiny/${out}_t.$extension" &
         if [ -n "$original" ]
         then
             cp "$file" "$output_orig/${out}_o.$extension"
@@ -168,6 +173,7 @@ do
 
         title=$(basename "$file")
         title=$(basename "$title" .$(echo "$title" | cut -d'.' -f 2))
+
         if [ -n "$original" ]
         then
             img_div="<a href=\"orig/${out}_o.$extension\"/><img alt=\"$title\" src=\"normal/${out}_n.$extension\"/></a>"
@@ -209,13 +215,13 @@ do
     }
   </script>
   <center>
-  <h1>$(basename $file)</h1>
+  <h1>$title</h1>
 <p>
   <div id="nav">$preceding_div ##FOLLOWING_DIV## <a href="index.html">&#x2302;</a></div>
   <div id="photo">$img_div</div>
 </p>
 
-<div id="exif_switch" class="toggle"><a href="#" onclick="toggle('exif_switch', 'hidden');toggle('exif', 'visible');">Exif</a></div>
+<div id="exif_switch" class="toggle"><a href="#" onclick="toggle('exif_switch', 'hidden');toggle('exif', 'visible');">Display EXIF informations</a></div>
 
 <p>
   $exiv_div
@@ -225,7 +231,7 @@ do
 </html>
 EOF
         preceding="$out"
-        echo "<div id=\"preview\"><a href=\"$out.html\"><img alt=\"[$title]\" src=\"tiny/${out}_t.$extension\"/></a><div>$title</div>" >> "$index"
+        echo "<div id=\"preview\"><a href=\"$out.html\"><img alt=\"[$title]\" src=\"tiny/${out}_t.$extension\"/></a>" >> "$index"
     done
 
     sed "s/##FOLLOWING_DIV##//g" "$output/$preceding.html" > $tmp
@@ -233,6 +239,7 @@ EOF
 done
 
 rm $tmp
+cp $stylesheet $output/
 echo "</div>" >> "$index"
 echo "</center>" >> "$index"
 echo "</body>" >> "$index"

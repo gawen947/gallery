@@ -11,16 +11,10 @@ h1 {
 }
 
 #nav {
-/* float: left; */
   font-size: 42px;
   color: #1d1d1d;
   font-weight: bold;
   font-family: verdana, sans-serif;
-/*  background:#0a0a0a;
-  box-shadow: inset 0px 0px 2px 2px #091929, 2px 2px 4px 0px #291909;
-  border-radius:0.5em;
-  padding:10px;
-*/
   opacity:0.5;
 }
 
@@ -35,7 +29,6 @@ h1 {
 
 #gallery {
   overflow: hidden;
-  white-space: nowrap;
   clear: both;
 }
 

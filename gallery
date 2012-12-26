@@ -1,6 +1,6 @@
 #!/bin/sh
 # File: gallery.sh
-#  Time-stamp: <2012-12-26 01:40:19 gawen>
+#  Time-stamp: <2012-12-26 02:08:13 gawen>
 #
 #  Copyright (C) 2012 David Hauweele <david@hauweele.net>
 #
@@ -220,8 +220,8 @@ do
 
         if [ -n "$preceding" ]
         then
-            preceding_div="<a rel=\"prev\" href=\"$preceding.html\">&larr;</a>"
-            sed "s/##FOLLOWING_DIV##/<a rel=\"next\" href=\"$out.html\">\&rarr;<\/a>/g" "$output/$preceding.html" > $tmp
+            preceding_div="<a id=\"prevLink\" rel=\"prev\" href=\"$preceding.html\">&larr;</a>"
+            sed "s/##FOLLOWING_DIV##/<a id=\"nextLink\" rel=\"next\" href=\"$out.html\">\&rarr;<\/a>/g" "$output/$preceding.html" > $tmp
             cp $tmp "$output/$preceding.html"
         else
             preceding_div="&larr;"
@@ -236,6 +236,30 @@ do
 </head>
 <body>
   <script language=javascript type='text/javascript'>
+     window.onload = function() {
+       nextLink = document.getElementById("nextLink")
+       prevLink = document.getElementById("prevLink")
+       if(nextLink)
+         nextURL = nextLink.href;
+       else
+         nextURL = "#";
+       if(prevLink)
+         prevURL = prevLink.href
+       else
+         prevURL = "#"
+
+       document.onkeydown = function(event) {
+       switch(event.keyCode) {
+       case 37: /* left */
+         window.location = prevURL;
+         break;
+       case 39: /* right */
+         window.location = nextURL;
+         break;
+       }
+      }
+    };
+
     function toggle(id, defvalue) {
       var visibility = document.getElementById(id).style.visibility;
       if((visibility != "visible") && (visibility != "hidden"))

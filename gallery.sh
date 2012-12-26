@@ -1,6 +1,6 @@
 #!/bin/sh
 # File: gallery.sh
-#  Time-stamp: <2012-12-26 00:04:51 gawen>
+#  Time-stamp: <2012-12-26 01:19:45 gawen>
 #
 #  Copyright (C) 2012 David Hauweele <david@hauweele.net>
 #
@@ -135,15 +135,39 @@ output_name() (
     echo $out
 )
 
+exiv_field() (
+    data=$(exiv2 -g $2 -Pt "$3")
+
+    if [ -z "$data" -o "$data" = "Off" -o "$data" = "Not known" ]
+    then
+        exit 0
+    fi
+
+    echo "<tr>"
+    echo "<td>$1</td>"
+    echo "<td><i><b>$data</b></i></td>"
+    echo "</tr>"
+)
+
 exiv_data() (
     echo "<div id=\"exif\" class=\"toggle\" onclick=\"toggle('exif', 'visible');toggle('exif_switch', 'hidden');\"><table>"
-    exiv2 "$1" | while read line
-    do
-        echo "<tr>"
-        echo "<td>$(echo $line | cut -d':' -f1)</td>"
-        echo "<td><b>$(echo $line | cut -d':' -f2)</b></td>"
-        echo "</tr>"
-    done
+    exiv_field "Camera model" "Exif.Image.Model" "$1"
+    exiv_field "Lens model" "Exif.CanonCs.LensType" "$1"
+    exiv_field "Date" "Exif.Image.DateTime" "$1"
+    exiv_field "Exposure" "Exif.Phto.ExposureTime" "$1"
+    exiv_field "Aperture" "Exif.Photo.FNumber" "$1"
+    exiv_field "Focal length" "Exif.Photo.FocalLength" "$1"
+    exiv_field "ISO" "Exif.Photo.ISOSpeedRatings" "$1"
+    exiv_field "Exposure bias" "Exif.Photo.ExposureBiasValue" "$1"
+    exiv_field "Program" "Exif.Photo.ExposureProgram" "$1"
+    exiv_field "Distance" "Exif.CanonSi.SubjectDistance" "$1"
+    exiv_field "Timer" "Exif.CanonCs.SelfTimer" "$1"
+    exiv_field "Metering" "Exif.CanonCs.Metering" "$1"
+    exiv_field "Metering mode" "Exif.Image.MeteringMode" "$1"
+    exiv_field "Flash mode" "Exif.CanonCs.FlashMode" "$1"
+    exiv_field "Drive mode" "Exif.CanonCs.DriveMode" "$1"
+    exiv_field "Focus mode" "Exif.CanonCs.FocusMode" "$1"
+    exiv_field "YCbCr positioning" "Exif.Image.YCbCrPositioning" "$1"
     echo "</table></div>"
 )
 

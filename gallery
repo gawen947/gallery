@@ -290,9 +290,10 @@ EOF
         echo "<div id=\"preview\"><a href=\"$out.html\"><img alt=\"[$title]\" src=\"tiny/${out}_t.$extension\"/></a>" >> "$index"
     done
 
-    sed "s/##FOLLOWING_DIV##/\&rarr;/g" "$output/$preceding.html" > $tmp
-    cp $tmp "$output/$preceding.html"
 done
+
+sed "s/##FOLLOWING_DIV##/\&rarr;/g" "$output/$preceding.html" > $tmp
+cp $tmp "$output/$preceding.html"
 
 rm $tmp
 cp $stylesheet $output/
